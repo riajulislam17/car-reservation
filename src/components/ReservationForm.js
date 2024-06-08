@@ -177,7 +177,6 @@ export default function ReservationForm() {
     );
   }
 
-  
   return (
     <>
       <div className="p-12">
@@ -454,12 +453,31 @@ export default function ReservationForm() {
                         </tr>
                       ))}
                   </tbody>
+
                   <tfoot>
+                    <tr>
+                      <td className="py-2 px-4 font-semibold" colSpan="3">
+                        Sub Total
+                      </td>
+                      <td className="py-2 px-4 font-semibold">
+                        ${grandTotal}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 font-semibold" colSpan="3">
+                        Discount
+                      </td>
+                      <td className="py-2 px-4 font-semibold">
+                        -${formData.discount}
+                      </td>
+                    </tr>
                     <tr>
                       <td className="py-2 px-4 font-semibold" colSpan="3">
                         Total
                       </td>
-                      <td className="py-2 px-4 font-semibold">${grandTotal}</td>
+                      <td className="py-2 px-4 font-semibold">
+                        ${(grandTotal - formData.discount).toFixed(2)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>

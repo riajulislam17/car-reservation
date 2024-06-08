@@ -81,7 +81,7 @@ const Invoice = React.forwardRef(({ formData, extra }, ref) => {
         </div>
         <div>
           <h1 className="text-xl font-bold">Reservation</h1>
-          <p>RA {formatData.reservationId}</p>
+          <p>RA #{formatData.reservationId}</p>
           <p>REPAIR ORDER:</p>
           <p>CLAIM:</p>
           <p>
@@ -157,6 +157,14 @@ const Invoice = React.forwardRef(({ formData, extra }, ref) => {
                   ))}
               </tbody>
               <tfoot>
+              <tr>
+                      <td className="py-2 px-4 font-semibold" colSpan="3">
+                        Sub Total
+                      </td>
+                      <td className="py-2 px-4 font-semibold">
+                        ${extraData.grandTotal}
+                      </td>
+                    </tr>
                 <tr>
                   <td className="py-2 px-4 font-semibold" colSpan="3">
                     Discount
@@ -170,7 +178,7 @@ const Invoice = React.forwardRef(({ formData, extra }, ref) => {
                     Total
                   </td>
                   <td className="py-2 px-4 font-semibold">
-                    ${extraData.grandTotal - formatData.discount}
+                    ${(extraData.grandTotal - formatData.discount).toFixed(2)}
                   </td>
                 </tr>
               </tfoot>
