@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { handleResource } from "../utils/APIRequester";
 import TextInputField from "./FormFields/TextInputField";
 import useForm from "./hooks/useForm";
 import DatePickerInput from "./FormFields/DatePickerInput";
 import SelectInput from "./FormFields/SelectInput";
 import CheckBoxInput from "./FormFields/CheckBoxInput";
+import Invoice from "./Invoice";
+import { useReactToPrint } from "react-to-print";
 
 const option = [
   { price: "9.00", item: "Collision Damage Waiver", unit: "$" },
@@ -13,14 +15,13 @@ const option = [
 ];
 
 export default function ReservationForm() {
-  // const invoiceRef = useRef<HTMLDivElement>(null);
-  // const handlePrint = useReactToPrint({
-  //   content: () => invoiceRef.current,
-  //   documentTitle: `Order #${order?.order.id}`,
-  //   pageStyle:
-  //     "@page { size: A4; width: 100%; height: 100%; margin: 50; padding: 10; }",
-  // });
-  // <Invoice order={order && order} ref={invoiceRef} />
+  const invoiceRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => invoiceRef.current,
+    documentTitle: `Invoice `,
+    pageStyle: "@page { size: A4; width: 100%; height: 100%; margin: 10mm;  }",
+  });
+
   const { formData, handleChange } = useForm({
     reservationId: "",
     pickupDate: "",
@@ -57,32 +58,35 @@ export default function ReservationForm() {
     getList();
   }, []);
 
+  // unique vehicle type array
   const vehicleTypes = [...new Set(cars.map((item) => item.type))].map(
     (type) => ({ value: type, label: type })
   );
 
+  //  filter vehicle array based on vehicle type
   const filteredVehicles = cars.filter(
     (item) => item.type === formData.vehicleType
   );
 
+  // conversion date for calculation
   const pickupDate = new Date(formData.pickupDate);
   const returnDate = new Date(formData.returnDate);
 
-  // Calculate the difference in milliseconds between pickupDate and returnDate
+  // calculate the difference in milliseconds between pickupDate and returnDate
   const timeDifference = returnDate.getTime() - pickupDate.getTime();
 
-  // Convert the time difference to hours, days, and weeks
+  // convert the time difference to hours, days, and weeks
   const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
   const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
   const weeksDifference = Math.floor(
     timeDifference / (1000 * 60 * 60 * 24 * 7)
   );
 
-  // Calculate the remaining hours after removing days and weeks
+  // calculate the remaining hours after removing days and weeks
   const remainingHours = hoursDifference % 24;
   const remainingDays = daysDifference % 7;
 
-  // Calculation each and total price
+  // calculation each and total price
   const selectedVehicle = formData.vehicle
     ? JSON.parse(formData.vehicle)
     : null;
@@ -99,6 +103,7 @@ export default function ReservationForm() {
 
   const baseAmount = hourlyTotal + dailyTotal + weeklyTotal;
 
+  // calculate additional charges price
   const additionalChargesTotal = formData.additionalCharges.reduce(
     (sum, item) => {
       const price = Number(item.price);
@@ -116,6 +121,7 @@ export default function ReservationForm() {
     0
   );
 
+  // final calculation wit tax
   const taxItem = formData.additionalCharges.find(
     (item) => item.item === "Rental Tax"
   );
@@ -176,9 +182,29 @@ export default function ReservationForm() {
       <div className="p-12">
         <div className="flex justify-between items-center gap-3 mb-3">
           <h1 className="font-bold text-xl">Reservation</h1>
-          <button className="text-white bg-[#6576FF] px-6 py-2 rounded">
+          <button
+            className="text-white bg-[#6576FF] px-6 py-2 rounded"
+            onClick={handlePrint}
+          >
             Print / Download
           </button>
+          <div className="hidden">
+            <Invoice
+              formData={formData}
+              ref={invoiceRef}
+              extra={{
+                weeksDifference,
+                remainingHours,
+                remainingDays,
+                selectedVehicle,
+                hourlyTotal,
+                dailyTotal,
+                weeklyTotal,
+                taxAmount,
+                grandTotal,
+              }}
+            />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -366,17 +392,6 @@ export default function ReservationForm() {
                   </div>
                 </div>
               </div>
-
-              <div className="mb-5">
-                <div className="border-2 border-[#DFDFFF] rounded p-3 my-3">
-                  <button
-                    className="bg-[#DFDFFF] px-8 py-4 rounded w-full text-black font-medium"
-                    type="submit"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Summary Column */}
@@ -432,7 +447,7 @@ export default function ReservationForm() {
                           </td>
                           <td className="py-2 px-4">
                             {item.item === "Rental Tax"
-                              ? `${item.price}${item.unit}`
+                              ? `${taxAmount?.toFixed(2)}`
                               : `${item.unit}${item.price}`}
                           </td>
                         </tr>
@@ -447,6 +462,17 @@ export default function ReservationForm() {
                     </tr>
                   </tfoot>
                 </table>
+              </div>
+
+              <div className="mb-5">
+                <div className="border-2 border-[#6576FF] rounded  my-3">
+                  <button
+                    className="bg-[#DFDFFF] px-8 py-4 rounded w-full text-[#2A52B9] font-medium"
+                    type="submit"
+                  >
+                    Proceed To Checkout
+                  </button>
+                </div>
               </div>
             </div>
           </div>
