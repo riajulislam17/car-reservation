@@ -23,6 +23,11 @@ function useForm(defaultValue = {}) {
     setFormData(data);
   }
 
+  const resetForm = () => {
+    setFormData(defaultValue);
+  };
+
+
   return {
     formData,
     reset,
@@ -32,6 +37,7 @@ function useForm(defaultValue = {}) {
     setLoading,
     errors,
     setErrors,
+    resetForm
   };
 }
 export default useForm;

@@ -22,7 +22,7 @@ export default function ReservationForm() {
     pageStyle: "@page { size: A4; width: 100%; height: 100%; margin: 10mm;  }",
   });
 
-  const { formData, handleChange } = useForm({
+  const { formData, handleChange, resetForm } = useForm({
     reservationId: "",
     pickupDate: "",
     returnDate: "",
@@ -159,7 +159,7 @@ export default function ReservationForm() {
           popupText: "Rent Booking Successful!",
         });
         setLoading(false);
-        // router.push("/product");
+        resetForm()
       } catch (error) {
         setLoading(false);
       }
